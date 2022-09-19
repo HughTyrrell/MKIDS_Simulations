@@ -14,15 +14,19 @@ def generate_data():
     pulse_data = [0,0,0,0,0,0,0,2,7,1,0]
     noise_data = [3,3,2,3,3,4,3,2,3,3,4]
     return np.add(pulse_data, noise_data)
+ 
+data = generate_data()
 
-#create scatter plot
-plt.scatter(time_data, generate_data())
-plt.ylabel("Signal Strength")
-plt.xlabel("Time")
-plt.ylim(0,15)
-plt.xlim(0,12)
-plt.show()
+def plot_data():
+    plt.scatter(time_data, data)
+    plt.ylabel("Signal Strength")
+    plt.xlabel("Time")
+    plt.ylim(0,15)
+    plt.xlim(0,12)
+    plt.show()
 
-"""f = open("pulse_script.txt", "w")
-f.write(time_data, generate_data())
-f.close()"""
+
+if __name__ == "__main__":
+    print("Times = ",time_data)
+    print("Signal = ", data)
+    plot_data()
