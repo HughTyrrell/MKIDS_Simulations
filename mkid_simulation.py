@@ -9,6 +9,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import csv
 import pandas as pd
+import scipy as sci
+from pathlib import Path
+import os
 
 # Three kinds of pulse are defined below:
 def gaussian_func(x):
@@ -16,7 +19,11 @@ def gaussian_func(x):
     # ends after valid input
     while True:
         try:
-            a, b, c = [int(y) for y in input("Enter mamplitude, mean, std. dev: ").split(",")]
+            #a, b, c = [float(y) for y in input("Enter amplitude, mean, std. dev: ").split()]
+            a = float(input("Amplitude: "))
+            b = float(input("Mean: "))
+            c = float(input("Std dev: "))
+                    
            
         except ValueError:
             print("Three comma seperated values, please")
@@ -27,24 +34,62 @@ def gaussian_func(x):
 
 def double_exp(x):
     # asks for three parameters for a Double Exponential
+    exp_list = []
+    
     while True:
         try:
-            a,b,c = [float(y) for y in input("Enter height param, centre, risetime: ").split(",")]
+            a = float(input("Amplitude: "))  
         except ValueError:
-            print("Three comma seperated values, please")
+            print("Please enter a number")
+        else: break
+    
+    while True:
+        try:
+            b = float(input("Decay parameter = "))           
+        except ValueError:
+            print("Please enter a number: ")
+        if b< 0:
+            print("Must be greater than 0")
+        else:
+            break  
+        
+    while True:  
+        try:
+            d = float(input("Rise parameter = "))
+        except ValueError:
+            print("Please enter a number: ")
+        if d< 0:
+            print("Must be greater than 0")
         else:
             break
-    # expression of double exponential:
-    return a*np.exp(-c*np.abs(x-b))
+    while True:
+        try: 
+            c = float(input("Centre = "))
+        except ValueError:
+            print("Please enter a number")
+        else: 
+            break
+        
+        
+        
+    for i in (x):
+        if i < c:
+            exp_list.append(a*np.exp(d*(i-c)))
+        elif i >= c:
+        # expression of double exponential:
+            exp_list.append(a*np.exp(-b*(i-c)))
+    return exp_list
 
 def sinc(x):
     # asks for three parameters to define a sinc function
     while True:
         try :
-            A,w,b = [float(y) for y in input("Please enter Amplitude, freq, shift: ").split(",")]
-            
+           # A,w,b = [float(y) for y in input("Please enter Amplitude, freq, shift: ").split()]
+           A = float(input("Amplitude: "))
+           w = float(input("Frequency: "))
+           b = float(input("Shift: "))
         except ValueError:
-            print("Three comma seperated values please ")
+            print("Please enter a number: ")
         else:
             break
     # expresses sinc function using numpy.sinc
@@ -53,12 +98,14 @@ def sinc(x):
 def pulse_func(x):
     # asks which one of the above pulses you wish to simulate
     while True:
-        distrib_type = input("What form of pulse? (Enter Gausssian, Double Exponential, Sinc): ")
-        if distrib_type == "Gaussian":
+        distrib_type = input("Pulse type: Enter g for gaussian, de for double exponential, s for sinc: ")
+        if distrib_type in ["Gaussian", "gaussian", "G", "g"]:
             return gaussian_func(x)
-        elif distrib_type == "Double Exponential":
+        elif distrib_type in ["Double Exponential", "de", "DE", "De", "double exponential"]:
+            #vfunc = np.vectorize(double_exp)
+            #return vfunc(x)
             return double_exp(x)
-        elif distrib_type == "Sinc":
+        elif distrib_type in ["sinc","S", "s","Sinc"]:
             return sinc(x)
         # Must take exact spelling to exit loop
         else:
@@ -68,7 +115,13 @@ def pulse_func(x):
 # four different kinds of noise defined below
 def drift_func(x):
     # simple linear function that causes data to drift
-    slope = float(input("Slope: "))
+    while True:
+        try:
+            slope = float(input("Slope: "))
+        except ValueError:
+            print("Please enter a number")
+        else:
+            break
     return slope*x
 
 def uniform_noise(x, offset):
@@ -79,10 +132,10 @@ def uniform_noise(x, offset):
             dev = float(input("Enter max dev from mean: "))
             
         except ValueError:
-            print("A number, please")
+            print("Please enter a number")
         else:
             break
-    
+    offset = offset(x)
     low = offset - dev, 
     high = offset + dev
     noise = np.random.uniform(low,high,len(x))
@@ -90,6 +143,7 @@ def uniform_noise(x, offset):
 
 def gaussian_noise(x,offset):
     # normally distributed random noise
+    offset = offset(x)
     while True:
         # similar to above, standard deviation 
         # defined wrt offset
@@ -106,16 +160,22 @@ def periodic_func(x):
     # simple sine wave with user defined parameters
     while True:       
         try:
-            A, w, b = [float(y) for y in input("Please enter Amplitude, freq, shift: ").split(',')]
+            #A, w, b = [float(y) for y in input("Please enter Amplitude, freq, shift: ")]
+            A = float(input("Hamplitude: "))
+            w = float(input("Frequency: "))
+            b = float(input("Shift: "))
             return A*np.sin(w*x - b)
         except ValueError:
-            print("Three comma seperated values please ")
+            print("Must be a number ")
         else:
             break
     
-def noise_func(x):
+#def noise_func(x):
+    
     # this function can add either gaussian noise or uniform noise
     # in addition periodic, drift and offset can all be included
+    
+def offset(x):
     while True: 
         # defines offset used in functions above
         try:
@@ -124,48 +184,69 @@ def noise_func(x):
             print("Must be a number")
         else: 
             break
+    return offset
+
+def noise_distrib(x):
     while True:
         # loop asks which noise distribution, until valid input
-        noise_type = input("Noise: Type u for uniform, g for gaussian:")
-        if noise_type == "u":
-            noise = uniform_noise(x,offset)
-        elif noise_type == "g":
-            noise = gaussian_noise(x,offset)
+        noise_type = input("Noise: Type u for uniform, g for gaussian: ")
+        if noise_type in  ["u", "U", "uniform", "UNIFORM", "Uniform"]:
+            return uniform_noise(x,offset)
+        elif noise_type in ["g", "Gaussian", "G", "gaussian", "GAUSSIAN"]:
+            return gaussian_noise(x,offset)
         else:
             print("Please pick valid option")
 
+
         # then asks for optional periodic noise
         # if <n> selected, moves on
-        periodic = input("Include periodic function? y/n ")
+
+def periodic_noise(x):
+    func = np.zeros(len(x))
+    while True:       
+        periodic = input("Add (more) periodic noise? <y/n> ")
         if periodic == "y":
-            p_noise = periodic_func(x)
-            noise = np.add(p_noise, noise)
+            func = np.add(func, periodic_func(x))           
         elif periodic == "n":
-            pass
+            break
         else:
             print("invalid response, try again")
-        
-        #can
-        slope = input("Include drift noise? <y/n")
+    return func
+
+def drift_noise(x):
+        # adds optional drift
+    while True:
+        slope = input("Include drift noise? <y/n> ")
         if slope == "y":
             drift = drift_func(x)
             
             # adds drift to other noise
-            return  np.add(drift, noise)
+            return  drift
         elif slope == "n":
-            break
+            return np.zeros(len(x))
         else:
             print("Invalid response, try again")
-    return noise
 
 def generate_data():
     # create the time series against which the data is plotted
-    time_data = np.arange(0,50,0.2)
+    while True:
+        try:
+            N = float(input("Number of time measurements/x-values: "))
+        except ValueError:
+            print("Must be number")
+        if N<0:
+            print("Must be greater than 0")
+        else:
+            break
+        
+    time_data = np.arange(0,N,0.2)
  
             
     # create the signal data
     pulse_data = pulse_func(time_data)
-    noise_data = noise_func(time_data)
+    #n1 = np.add(offset(time_data),noise_distrib(time_data))
+    n2 = np.add(periodic_noise(time_data), drift_noise(time_data))
+    noise_data = np.add(noise_distrib(time_data),n2)
     
     
             
@@ -187,37 +268,44 @@ def plot_data(time_data, data):
     plt.xlabel("Time")
     
     # sets reasonable limits
-    plt.ylim(-10,20)
-    plt.xlim(0,50)
-    plt.savefig('pulse_plot.png', dpi = 300)
+    #plt.ylim(-10,20)
+    plt.xlim(0,max(time_data))
+    
     # displays the plot
     plt.show()
-
+def save_data(time_data, data):
+     
+    
+    # saving the dataframe 
+    while True:
+        save = input("Save plot and data? <y/n> ")
+        if save == "y":
+            path = input("Enter path name to folder, starting and ending with /: ") 
+            dict = {'Time': time_data, 'Signal': data}       
+            df = pd.DataFrame(dict)
+            df.to_csv(Path(path, 'pulse_data.csv'))
+            plot_data(time_data, data)
+            plt.savefig(path + 'pulse_plot.png', dpi = 300)
+        elif save == "n":
+            break
+        else:
+            print("Invalid response, please try again")
+    # calls plot_data to save plot
 # this main function allows the import of other functions
 def main():
     # gets time and signal data from the generate function
     time_data, data = generate_data()
-    
+    save_data(time_data, data)
     # prints the raw data
     print("Times = ",time_data)
     print("Signal = ", data)
     plot_data(time_data, data)
 # save data as csv and plot as png
-def save_data():
-    
-    # call data from function above
-    time_data, data = generate_data()
+
     
     
-    dict = {'Time': time_data, 'Signal': data}  
-       
-    df = pd.DataFrame(dict) 
+#def welch():
     
-    # saving the dataframe 
-    df.to_csv('pulse_sim.csv')
-    
-    # calls plot_data to save plot
-    plot_data(time_data, data)
     
 # this syntax is used to allow functions to be imported
 if __name__ == "__main__":
