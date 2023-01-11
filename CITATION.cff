@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+title: Analysis tools for MKIDs observations
+message: >-
+  Please use this file to cite the contents of this
+  repository
+type: software
+authors:
+  - given-names: Hugh
+    family-names: Tyrrell
+    email: tyrrelhu@tcd.ie
+    affiliation: Trinity College Dublin
