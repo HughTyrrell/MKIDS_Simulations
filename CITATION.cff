@@ -4,6 +4,7 @@ message: >-
   Please use this file to cite the contents of this
   repository
 type: software
+url: "https://github.com/HughTyrrell/MKIDS_Simulations"
 authors:
   - given-names: Hugh
     family-names: Tyrrell
